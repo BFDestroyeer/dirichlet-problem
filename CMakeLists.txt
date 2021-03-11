@@ -18,4 +18,4 @@ file(GLOB_RECURSE  DIRICHLET_PROBLEM_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
-add_executable(dirichlet-problem ${DIRICHLET_PROBLEM_HEADERS} ${DIRICHLET_PROBLEM_SRC})
+add_executable(dirichlet-problem ${DIRICHLET_PROBLEM_SRC} ${DIRICHLET_PROBLEM_HEADERS})
