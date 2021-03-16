@@ -1,6 +1,6 @@
 #include "sequentialdirichlet.h"
 
-Network sequentialDirichlet(std::function<double(double, double)> f, std::function<double(double, double)> g,
+Network sequentialDirichlet(const std::function<double(double, double)> &f, std::function<double(double, double)> g,
                             size_t node_count, double epsilon) {
     if (node_count < 2) {
         throw std::exception("Node count can't be lesser than 2");

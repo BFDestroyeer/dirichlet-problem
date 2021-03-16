@@ -1,6 +1,8 @@
 #pragma once
 
+#include <fstream>
 #include <stdexcept>
+#include <string>
 
 /**
  * @brief Network of double values
@@ -58,4 +60,11 @@ public:
      * @return double& Network value
      */
     double &operator()(size_t row, size_t column);
+
+    /**
+     * @brief Export network to file
+     *
+     * @param path Path to file
+     */
+    void save(const std::string path);
 };

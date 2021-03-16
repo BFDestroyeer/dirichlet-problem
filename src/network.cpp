@@ -35,3 +35,9 @@ const double Network::operator()(size_t row, size_t column) const {
 double &Network::operator()(size_t row, size_t column) {
     return array[row * m_size + column];
 }
+
+void Network::save(const std::string path) {
+    std::ofstream file(path, std::ios::binary);
+    file.write((char *)&m_size, sizeof(m_size));
+    file.write((char *)array, m_size * m_size * sizeof(double));
+}
