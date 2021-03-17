@@ -5,7 +5,7 @@ Network::Network(size_t size) {
         throw std::runtime_error("Can't create zero size network");
     }
     m_size = size;
-    array = new double[m_size * m_size];
+    array = new double[m_size * m_size]();
 }
 
 Network::Network(const Network &network) {
