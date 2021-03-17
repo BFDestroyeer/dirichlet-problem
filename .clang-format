@@ -1,0 +1,11 @@
+﻿---
+BasedOnStyle: LLVM
+AccessModifierOffset: "-4"
+AllowShortBlocksOnASingleLine: "false"
+AllowShortFunctionsOnASingleLine: None
+AlwaysBreakTemplateDeclarations: "Yes"
+ColumnLimit: "120"
+IndentWidth: "4"
+Language: Cpp
+NamespaceIndentation: All
+UseTab: Never
