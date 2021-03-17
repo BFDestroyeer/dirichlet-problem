@@ -19,3 +19,13 @@ file(GLOB_RECURSE  DIRICHLET_PROBLEM_SRC
 )
 
 add_executable(dirichlet-problem ${DIRICHLET_PROBLEM_SRC} ${DIRICHLET_PROBLEM_HEADERS})
+
+# OpenMP
+if(MSVC)
+    target_compile_options(dirichlet-problem PUBLIC "/openmp")
+elseif(UNIX)
+    target_link_libraries(dirichlet-problem -fopenmp)
+else()
+    target_compile_options(dirichlet-problem PUBLIC "-fopenmp")
+    target_link_libraries(dirichlet-problem -fopenmp)
+endif()
