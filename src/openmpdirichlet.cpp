@@ -35,7 +35,6 @@ Network openmpDirichlet(const std::function<double(double, double)> &f, std::fun
         max_delta = 0;
 #pragma omp parallel for shared(u, f, node_count) private(delta) reduction(max : max_delta)
         for (int32_t i = 1; i < node_count - 1; i++) {
-            int num = omp_get_thread_num();
             for (int32_t j = 1; j < node_count - 1; j++) {
                 double temp = u(i, j);
                 u(i, j) = 0.25 * (u(i - 1, j) + u(i + 1, j) + u(i, j - 1) + u(i, j + 1) - h * h * f_network(i, j));
