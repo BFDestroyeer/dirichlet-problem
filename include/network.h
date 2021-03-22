@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 
@@ -67,4 +68,6 @@ public:
      * @param path Path to file
      */
     void save(const std::string path);
+
+    friend std::ostream &operator<<(std::ostream &out, const Network &network);
 };

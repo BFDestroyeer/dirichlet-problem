@@ -41,3 +41,13 @@ void Network::save(const std::string path) {
     file.write((char *)&m_size, sizeof(m_size));
     file.write((char *)array, m_size * m_size * sizeof(double));
 }
+
+std::ostream &operator<<(std::ostream &out, const Network &network) {
+    for (size_t i = 0; i < network.m_size; i++) {
+        for (size_t j = 0; j < network.m_size; j++) {
+            out << network(i, j) << ' ';
+        }
+        out << std::endl;
+    }
+    return out;
+}

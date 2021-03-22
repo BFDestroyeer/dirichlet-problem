@@ -1,4 +1,5 @@
 #include "openmpblockdirichlet.h"
+#include <iostream>
 
 Network openmpBlockDirichlet(const std::function<double(double, double)> &f, std::function<double(double, double)> g,
                              size_t node_count, double epsilon, int thread_count) {
@@ -28,7 +29,8 @@ Network openmpBlockDirichlet(const std::function<double(double, double)> &f, std
                 f(i * (1 / static_cast<double>(node_count - 1)), j * (1 / static_cast<double>(node_count - 1)));
         }
     }
-    int32_t nb = 2; // TODO: SET BLOCK SIZE!!!
+    size_t block_size = 2;
+    int32_t nb = (node_count - 2) / block_size + 1 + ((node_count - 2) % block_size != 0 ? 1 : 0);
     // Calculation
     double delta, max_delta, max_delta_1, max_delta_2, h = 1 / static_cast<double>(node_count - 1);
     do {
@@ -39,26 +41,35 @@ Network openmpBlockDirichlet(const std::function<double(double, double)> &f, std
 #pragma omp parallel for shared(u, f, node_count) private(delta) reduction(max : max_delta_1)
             for (int32_t i = 0; i < nx + 1; i++) {
                 int32_t j = nx - i;
-                // BLOCK WORK
-                double temp = u(i, j);
-                u(i, j) = 0.25 * (u(i - 1, j) + u(i + 1, j) + u(i, j - 1) + u(i, j + 1) - h * h * f_network(i, j));
-                delta = std::fabs(temp - u(i, j));
-                if (max_delta_1 < delta) {
-                    max_delta_1 = delta;
+                for (int32_t k = 1 + block_size * i; k < 1 + block_size * (i + 1) && k < node_count - 1; k++) {
+                    for (int32_t l = 1 + block_size * j; l < 1 + block_size * (j + 1) && l < node_count - 1; l++) {
+                        double temp = u(k, l);
+                        u(k, l) =
+                            0.25 * (u(k - 1, l) + u(k + 1, l) + u(k, l - 1) + u(k, l + 1) - h * h * f_network(k, l));
+                        delta = std::fabs(temp - u(k, l));
+                        if (max_delta_1 < delta) {
+                            max_delta_1 = delta;
+                        }
+                    }
                 }
             }
         }
+
         for (int32_t nx = nb - 2; nx > -1; nx--) {
-            // Wave decrease
-#pragma omp parallel for shared(u, f, node_count) private(delta) reduction(max : max_delta_2)
-            for (int32_t i = 0; i < nx + 1; i++) {
+            // Wave increase
+#pragma omp parallel for shared(u, f, node_count) private(delta) reduction(max : max_delta_1)
+            for (int32_t i = nb - nx - 1; i < nb; i++) {
                 int32_t j = 2 * (nb - 1) - nx - i;
-                // BLOCK WORK
-                double temp = u(i, j);
-                u(i, j) = 0.25 * (u(i - 1, j) + u(i + 1, j) + u(i, j - 1) + u(i, j + 1) - h * h * f_network(i, j));
-                delta = std::fabs(temp - u(i, j));
-                if (max_delta_2 < delta) {
-                    max_delta_2 = delta;
+                for (int32_t k = 1 + block_size * i; k < 1 + block_size * (i + 1) && k < node_count - 1; k++) {
+                    for (int32_t l = 1 + block_size * j; l < 1 + block_size * (j + 1) && l < node_count - 1; l++) {
+                        double temp = u(k, l);
+                        u(k, l) =
+                            0.25 * (u(k - 1, l) + u(k + 1, l) + u(k, l - 1) + u(k, l + 1) - h * h * f_network(k, l));
+                        delta = std::fabs(temp - u(k, l));
+                        if (max_delta_1 < delta) {
+                            max_delta_1 = delta;
+                        }
+                    }
                 }
             }
         }
