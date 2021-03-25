@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -13,6 +14,7 @@ class Network {
 private:
     size_t m_size;
     double *array;
+    std::array<double, 4> m_ranges;
 
 public:
     Network() = delete;
@@ -22,7 +24,7 @@ public:
      *
      * @param size Count of nodes per each dimension
      */
-    Network(size_t size);
+    Network(size_t size, std::array<double, 4> ranges);
 
     /**
      * @brief Construct a new Network object

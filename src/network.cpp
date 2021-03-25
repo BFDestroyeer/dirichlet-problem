@@ -1,10 +1,14 @@
 #include "network.h"
 
-Network::Network(size_t size) {
+Network::Network(size_t size, std::array<double, 4> ranges) {
     if (size == 0) {
         throw std::runtime_error("Can't create zero size network");
     }
+    if ((ranges[0] > ranges[1]) || (ranges[2] > ranges[3])) {
+        throw std::runtime_error("Wrong range");
+    }
     m_size = size;
+    m_ranges = ranges;
     array = new double[m_size * m_size]();
 }
 
@@ -39,6 +43,9 @@ double &Network::operator()(size_t row, size_t column) {
 void Network::save(const std::string path) {
     std::ofstream file(path, std::ios::binary);
     file.write((char *)&m_size, sizeof(m_size));
+    for (size_t i = 0; i < 4; i++) {
+        file.write((char *)&m_ranges[i], sizeof(double));
+    }
     file.write((char *)array, m_size * m_size * sizeof(double));
 }
 
