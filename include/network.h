@@ -69,5 +69,12 @@ public:
      */
     void save(const std::string path);
 
+    /**
+     * @brief Return raw array pointer
+     *
+     * @return double Raw array pointer;
+     */
+    double *data();
+
     friend std::ostream &operator<<(std::ostream &out, const Network &network);
 };

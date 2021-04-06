@@ -20,6 +20,11 @@ file(GLOB_RECURSE  DIRICHLET_PROBLEM_SRC
 
 add_executable(dirichlet-problem ${DIRICHLET_PROBLEM_SRC} ${DIRICHLET_PROBLEM_HEADERS})
 
+# MPI
+find_package(MPI REQUIRED)
+include_directories(SYSTEM "${MPI_CXX_INCLUDE_DIRS}")
+target_link_libraries(dirichlet-problem ${MPI_CXX_LIBRARIES})
+
 # OpenMP
 if(MSVC)
     target_compile_options(dirichlet-problem PUBLIC "/openmp")

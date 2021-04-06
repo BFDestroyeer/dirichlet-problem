@@ -29,7 +29,7 @@ Network openmpBlockDirichlet(const std::function<double(double, double)> &f, std
                 f(i * (1 / static_cast<double>(node_count - 1)), j * (1 / static_cast<double>(node_count - 1)));
         }
     }
-    size_t block_size = 2;
+    size_t block_size = 40;
     int32_t nb = (node_count - 2) / block_size + 1 + ((node_count - 2) % block_size != 0 ? 1 : 0);
     // Calculation
     double delta, max_delta, max_delta_1, max_delta_2, h = 1 / static_cast<double>(node_count - 1);
