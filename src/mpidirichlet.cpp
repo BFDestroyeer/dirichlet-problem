@@ -1,12 +1,12 @@
 #include "mpidirichlet.h"
 #include <iostream>
 Network mpiDirichlet(const std::function<double(double, double)> &f, std::function<double(double, double)> g,
-                     size_t node_count, double epsilon) {
+                     std::array<double, 4> ranges, size_t node_count, double epsilon) {
     if (node_count < 2) {
         throw std::exception("Node count can't be lesser than 2");
     }
 
-    Network u(node_count), f_network(node_count);
+    Network u(node_count, ranges), f_network(node_count, ranges);
     int begin_row, end_row, rows_in_part, message_rows, message_length;
     int rank, process_count;
     int *counts, *displs;
@@ -34,16 +34,17 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
 
     // Initialization
     for (size_t i = 0; i < node_count; i++) {
-        double shift = i * (1 / static_cast<double>(node_count - 1));
-        u(0, i) = g(0, shift);
-        u(i, 0) = g(shift, 0);
-        u(i, node_count - 1) = g(shift, 1);
-        u(node_count - 1, i) = g(1, shift);
+        double shift_x = ranges[0] + i * ((ranges[1] - ranges[0]) / static_cast<double>(node_count - 1));
+        double shift_y = ranges[2] + i * ((ranges[3] - ranges[2]) / static_cast<double>(node_count - 1));
+        u(0, i) = g(0, shift_y);
+        u(i, 0) = g(shift_x, 0);
+        u(i, node_count - 1) = g(shift_x, 1);
+        u(node_count - 1, i) = g(1, shift_y);
     }
     for (size_t i = 0; i < node_count; i++) {
         for (size_t j = 0; j < node_count; j++) {
-            f_network(i, j) =
-                f(i * (1 / static_cast<double>(node_count - 1)), j * (1 / static_cast<double>(node_count - 1)));
+            f_network(i, j) = f(ranges[0] + i * ((ranges[1] - ranges[0]) / static_cast<double>(node_count - 1)),
+                                ranges[2] + j * ((ranges[3] - ranges[2]) / static_cast<double>(node_count - 1)));
         }
     }
 
@@ -63,19 +64,26 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
             }
         }
         MPI_Allreduce(&local_delta, &max_delta, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-        if (max_delta < epsilon) {
+        if (max_delta > epsilon) {
             MPI_Status status;
             if (rank == 0) {
                 MPI_Send(u.data() + (end_row - 1) * node_count, node_count, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD);
+                MPI_Recv(u.data() + end_row * node_count, node_count, MPI_DOUBLE, 1, 0, MPI_COMM_WORLD, &status);
             } else if (rank != process_count - 1) {
                 MPI_Sendrecv(u.data() + (end_row - 1) * node_count, node_count, MPI_DOUBLE, rank + 1, 0,
                              u.data() + (begin_row - 1) * node_count, node_count, MPI_DOUBLE, rank - 1, 0,
                              MPI_COMM_WORLD, &status);
+                MPI_Sendrecv(u.data() + begin_row * node_count, node_count, MPI_DOUBLE, rank - 1, 0,
+                             u.data() + end_row * node_count, node_count, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD,
+                             &status);
             } else {
                 MPI_Recv(u.data() + (end_row - 1) * node_count, node_count, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD,
                          &status);
+                MPI_Send(u.data() + begin_row * node_count, node_count, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD);
             }
         } else {
+            MPI_Gatherv(u.data() + begin_row * node_count, message_length, MPI_DOUBLE, u.data(), counts, displs,
+                        MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
     } while (max_delta > epsilon);
     delete[] counts;

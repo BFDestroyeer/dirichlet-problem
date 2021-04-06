@@ -9,4 +9,4 @@
 #include "network.h"
 
 Network mpiDirichlet(const std::function<double(double, double)> &f, std::function<double(double, double)> g,
-                     size_t node_count, double epsilon);
+                     std::array<double, 4> ranges, size_t node_count, double epsilon);
