@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cmath>
 #include <functional>
 #include <stdexcept>
@@ -9,4 +10,4 @@
 #include "network.h"
 
 Network openmpDirichlet(const std::function<double(double, double)> &f, std::function<double(double, double)> g,
-                        size_t node_count, double epsilon, int thread_count);
+                        std::array<double, 4> ranges, size_t node_count, double epsilon, int thread_count);

@@ -12,8 +12,9 @@
 int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);
     auto begin_time = std::chrono::steady_clock::now();
-    auto result = sequentialDirichlet([](double x, double y) { return 100; },
-                                      [](double x, double y) { return 200 - 100 * x * x - 200 * y; }, 5, 1);
+    auto result =
+        sequentialDirichlet([](double x, double y) { return 100; },
+                            [](double x, double y) { return 200 - 100 * x * x - 200 * y; }, {-1, 1, -1, 1}, 100, 1);
     auto end_time = std::chrono::steady_clock::now();
     std::cout << result << std::endl;
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time).count() << std::endl;
