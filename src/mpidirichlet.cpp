@@ -77,13 +77,13 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
                              u.data() + end_row * node_count, node_count, MPI_DOUBLE, rank + 1, 0, MPI_COMM_WORLD,
                              &status);
             } else {
-                MPI_Recv(u.data() + (end_row - 1) * node_count, node_count, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD,
+                MPI_Recv(u.data() + (begin_row - 1) * node_count, node_count, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD,
                          &status);
                 MPI_Send(u.data() + begin_row * node_count, node_count, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD);
             }
         } else {
             MPI_Gatherv(u.data() + begin_row * node_count, message_length, MPI_DOUBLE, u.data(), counts, displs,
-                        MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                        MPI_DOUBLE, 0, MPI_COMM_WORLD); // TODO: FIX
         }
     } while (max_delta > epsilon);
     delete[] counts;
