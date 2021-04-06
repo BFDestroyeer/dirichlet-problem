@@ -6,8 +6,8 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
         throw std::exception("Node count can't be lesser than 2");
     }
 
-    Network u(node_count, ranges), f_network(node_count, ranges);
-    int begin_row, end_row, rows_in_part, message_rows, message_length;
+    Network u(node_count, ranges), f_network(node_count, ranges), result(node_count, ranges);
+    int begin_row, end_row, rows_in_part, message_rows;
     int rank, process_count;
     int *counts, *displs;
     counts = new int[process_count];
@@ -20,7 +20,6 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
     begin_row = (rank != 0 ? rank * rows_in_part : 1);
     end_row = (rank != process_count - 1 ? (rank + 1) * rows_in_part : node_count - 1);
     message_rows = end_row - begin_row;
-    message_length = rows_in_part * node_count;
 
     // MPI displs and counts initialization
     counts[0] = rows_in_part * node_count;
@@ -29,7 +28,7 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
         counts[i] = rows_in_part * node_count;
         displs[i] = i * rows_in_part * node_count;
     }
-    counts[process_count - 1] = (node_count - 1 - (process_count - 1) * rows_in_part) * node_count;
+    counts[process_count - 1] = (node_count - (process_count - 1) * rows_in_part) * node_count;
     displs[process_count - 1] = (process_count - 1) * rows_in_part * node_count;
 
     // Initialization
@@ -82,12 +81,17 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
                 MPI_Send(u.data() + begin_row * node_count, node_count, MPI_DOUBLE, rank - 1, 0, MPI_COMM_WORLD);
             }
         } else {
-            MPI_Gatherv(u.data() + begin_row * node_count, message_length, MPI_DOUBLE, u.data(), counts, displs,
-                        MPI_DOUBLE, 0, MPI_COMM_WORLD); // TODO: FIX
+            if (rank == 0) {
+                begin_row = 0;
+            } else if (rank == process_count - 1) {
+                end_row++;
+            }
+            MPI_Gatherv(u.data() + begin_row * node_count, (end_row - begin_row) * node_count, MPI_DOUBLE,
+                        result.data(), counts, displs, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
     } while (max_delta > epsilon);
     delete[] counts;
     delete[] displs;
 
-    return u;
+    return result;
 }

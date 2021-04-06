@@ -16,11 +16,8 @@ int main(int argc, char *argv[]) {
     auto begin_time = std::chrono::steady_clock::now();
     auto result =
         sequentialDirichlet([](double x, double y) { return 100; },
-                            [](double x, double y) { return 200 - 100 * x * x - 200 * y; }, {-1, 1, -1, 1}, 5, 1);
+                            [](double x, double y) { return 200 - 100 * x * x - 200 * y; }, {-1, 1, -1, 1}, 100, 0.1);
     auto end_time = std::chrono::steady_clock::now();
-    if (rank == 0) {
-        std::cout << result << std::endl;
-    }
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time).count() << std::endl;
     /*begin_time = std::chrono::steady_clock::now();
     auto parallel_result = openmpDirichlet([](double x, double y) { return 100; },
@@ -31,11 +28,8 @@ int main(int argc, char *argv[]) {
     begin_time = std::chrono::steady_clock::now();
     auto block_result =
         mpiDirichlet([](double x, double y) { return 100; },
-                     [](double x, double y) { return 200 - 100 * x * x - 200 * y; }, {-1, 1, -1, 1}, 5, 1);
+                     [](double x, double y) { return 200 - 100 * x * x - 200 * y; }, {-1, 1, -1, 1}, 100, 0.1);
     end_time = std::chrono::steady_clock::now();
-    if (rank == 0) {
-        std::cout << block_result << std::endl;
-    }
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin_time).count() << std::endl;
 
     result.save("network.bin");
