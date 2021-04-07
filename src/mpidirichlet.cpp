@@ -7,11 +7,10 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
     }
 
     Network u(node_count, ranges), f_network(node_count, ranges), result(node_count, ranges);
-    int begin_row, end_row, rows_in_part, message_rows;
+    int begin_row, end_row, rows_in_part;
     int rank, process_count;
-    int *counts, *displs;
-    counts = new int[process_count];
-    displs = new int[process_count];
+    int *counts = new int[process_count];
+    int *displs = new int[process_count];
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &process_count);
 
@@ -19,7 +18,6 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
     rows_in_part = node_count / process_count;
     begin_row = (rank != 0 ? rank * rows_in_part : 1);
     end_row = (rank != process_count - 1 ? (rank + 1) * rows_in_part : node_count - 1);
-    message_rows = end_row - begin_row;
 
     // MPI displs and counts initialization
     counts[0] = rows_in_part * node_count;
@@ -87,7 +85,7 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
                 end_row++;
             }
             MPI_Gatherv(u.data() + begin_row * node_count, (end_row - begin_row) * node_count, MPI_DOUBLE,
-                        result.data(), counts, displs, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                        result.data(), counts, displs, MPI_DOUBLE, 0, MPI_COMM_WORLD); // TODO: fix displs make error
         }
     } while (max_delta > epsilon);
     delete[] counts;
