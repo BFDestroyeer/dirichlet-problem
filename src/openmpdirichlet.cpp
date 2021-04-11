@@ -8,7 +8,7 @@ Network openmpDirichlet(const std::function<double(double, double)> &f, std::fun
         throw std::runtime_error("Invalid thread count");
     }
     if (node_count < 2) {
-        throw std::exception("Node count can't be lesser than 2");
+        throw std::runtime_error("Node count can't be lesser than 2");
     }
 
     Network u(node_count, ranges), f_network(node_count, ranges);

@@ -3,7 +3,7 @@
 Network mpiDirichlet(const std::function<double(double, double)> &f, std::function<double(double, double)> g,
                      std::array<double, 4> ranges, size_t node_count, double epsilon) {
     if (node_count < 2) {
-        throw std::exception("Node count can't be lesser than 2");
+        throw std::runtime_error("Node count can't be lesser than 2");
     }
 
     Network u(node_count, ranges), f_network(node_count, ranges), result(node_count, ranges);
