@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     std::array<std::array<int64_t, 3>, 3> results;
     std::string argument(argv[1]);
     std::string method_name;
-    size_t node_count = 10;
+    size_t node_count = 75;
 
     for (size_t i = 0; i < 3; i++) {
         node_count *= 2;

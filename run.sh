@@ -11,7 +11,7 @@ fi
 
 # Write header
 echo '' > 'results.md'
-echo '|Name|Threads count|10 000 000 items|100 000 000 items|1 000 000 000 items|' >> 'results.md'
+echo '|Name|Threads count|75^2 nodes|150^2 nodes|300^2 nodes|' >> 'results.md'
 echo '|-|-|-|-|-|' >> 'results.md'
 
 # Run executable
