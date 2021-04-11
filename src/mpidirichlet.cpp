@@ -85,7 +85,7 @@ Network mpiDirichlet(const std::function<double(double, double)> &f, std::functi
                 end_row++;
             }
             MPI_Gatherv(u.data() + begin_row * node_count, (end_row - begin_row) * node_count, MPI_DOUBLE,
-                        result.data(), counts, displs, MPI_DOUBLE, 0, MPI_COMM_WORLD); // TODO: fix displs make error
+                        result.data(), counts, displs, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
     } while (max_delta > epsilon);
     delete[] counts;
