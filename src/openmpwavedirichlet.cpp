@@ -1,7 +1,7 @@
-#include "openmpdirichlet.h"
+#include "openmpwavedirichlet.h"
 
-Network openmpDirichlet(const std::function<double(double, double)> &f, std::function<double(double, double)> g,
-                        std::array<double, 4> ranges, size_t node_count, double epsilon, int thread_count) {
+Network openmpWaveDirichlet(const std::function<double(double, double)> &f, std::function<double(double, double)> g,
+                            std::array<double, 4> ranges, size_t node_count, double epsilon, int thread_count) {
     if (thread_count > 0) {
         omp_set_num_threads(thread_count);
     } else {
@@ -31,20 +31,37 @@ Network openmpDirichlet(const std::function<double(double, double)> &f, std::fun
     }
 
     // Calculation
-    double delta, max_delta, h = 1 / static_cast<double>(node_count - 1);
+    double delta, max_delta, max_delta_1, max_delta_2, h = 1 / static_cast<double>(node_count - 1);
     do {
-        max_delta = 0;
-#pragma omp parallel for shared(u, f, node_count) private(delta) reduction(max : max_delta)
-        for (int32_t i = 1; i < node_count - 1; i++) {
-            for (int32_t j = 1; j < node_count - 1; j++) {
+        max_delta_1 = 0;
+        max_delta_2 = 0;
+        for (int32_t nx = 1; nx < node_count - 1; nx++) {
+            // Wave increase
+#pragma omp parallel for shared(u, f, node_count) private(delta) reduction(max : max_delta_1)
+            for (int32_t i = 1; i < nx + 1; i++) {
+                int32_t j = nx + 1 - i;
                 double temp = u(i, j);
                 u(i, j) = 0.25 * (u(i - 1, j) + u(i + 1, j) + u(i, j - 1) + u(i, j + 1) - h * h * f_network(i, j));
                 delta = std::fabs(temp - u(i, j));
-                if (max_delta < delta) {
-                    max_delta = delta;
+                if (max_delta_1 < delta) {
+                    max_delta_1 = delta;
                 }
             }
         }
+        for (int32_t nx = node_count - 3; nx > 0; nx--) {
+            // Wave decrease
+#pragma omp parallel for shared(u, f, node_count) private(delta) reduction(max : max_delta_2)
+            for (int32_t i = node_count - nx - 1; i < node_count - 1; i++) {
+                int32_t j = 2 * (node_count - 2) - nx - i + 1;
+                double temp = u(i, j);
+                u(i, j) = 0.25 * (u(i - 1, j) + u(i + 1, j) + u(i, j - 1) + u(i, j + 1) - h * h * f_network(i, j));
+                delta = std::fabs(temp - u(i, j));
+                if (max_delta_2 < delta) {
+                    max_delta_2 = delta;
+                }
+            }
+        }
+        max_delta = (max_delta_1 > max_delta_2 ? max_delta_1 : max_delta_2);
     } while (max_delta > epsilon);
     return u;
 }

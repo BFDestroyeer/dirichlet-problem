@@ -9,6 +9,13 @@ from mpl_toolkits.mplot3d import Axes3D
 def main(args):
     file = open(args.path, 'rb')
     size = struct.unpack('Q', file.read(8))[0]
+
+    ranges = []
+    ranges.append(struct.unpack('d', file.read(8))[0])
+    ranges.append(struct.unpack('d', file.read(8))[0])
+    ranges.append(struct.unpack('d', file.read(8))[0])
+    ranges.append(struct.unpack('d', file.read(8))[0])
+
     array = np.zeros((size, size))
     for i in range(size):
         for j in range(size):

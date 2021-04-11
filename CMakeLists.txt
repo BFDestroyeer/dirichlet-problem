@@ -20,12 +20,14 @@ file(GLOB_RECURSE  DIRICHLET_PROBLEM_SRC
 
 add_executable(dirichlet-problem ${DIRICHLET_PROBLEM_SRC} ${DIRICHLET_PROBLEM_HEADERS})
 
+# MPI
+find_package(MPI REQUIRED)
+include_directories(SYSTEM "${MPI_CXX_INCLUDE_DIRS}")
+target_link_libraries(dirichlet-problem ${MPI_CXX_LIBRARIES})
+
 # OpenMP
-if(MSVC)
-    target_compile_options(dirichlet-problem PUBLIC "/openmp")
-elseif(UNIX)
-    target_link_libraries(dirichlet-problem -fopenmp)
-else()
-    target_compile_options(dirichlet-problem PUBLIC "-fopenmp")
-    target_link_libraries(dirichlet-problem -fopenmp)
-endif()
+find_package(OpenMP REQUIRED)
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+
